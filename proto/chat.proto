@@ -1,0 +1,37 @@
+syntax = "proto3";
+
+package chat;
+
+option go_package = "github.com/teryble09/go_grpc_chat/proto";
+
+service Chat {
+    rpc Login(LoginRequest) returns (LoginResponse) {}
+    rpc Stream(stream SendMessage) returns (stream Message) {}
+    rpc LoadHistory(HistoryRequest) returns (HistoryResponse) {}
+}
+
+message LoginRequest {
+    string username = 1;
+    string password = 2;
+}
+
+message LoginResponse {}
+
+message HistoryRequest {
+    int32 amount = 1;
+    uint64 last_message_id = 2;
+}
+
+message HistoryResponse {
+    repeated Message messages = 1; 
+}
+
+message Message {  
+    uint64 message_id = 1;
+    string username = 2;
+    string content = 3;
+}
+
+message SendMessage {
+    string text = 1;
+}
