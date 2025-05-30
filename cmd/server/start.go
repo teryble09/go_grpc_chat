@@ -23,9 +23,9 @@ func main() {
 		os.Exit(1)
 	}
 
-	db, err := storage.NewPostgresDBConnection("5432", "postgres", "postgres", "postgres")
+	db, err := storage.NewPostgresDBConnection("5432", "chat_db", "chat", "chat")
 	if err != nil {
-		log.Error("can't connect to the database")
+		log.Error("can't connect to the database" + err.Error())
 		os.Exit(1)
 	}
 
