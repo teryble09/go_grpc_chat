@@ -9,6 +9,7 @@ import (
 
 	"github.com/teryble09/go_grpc_chat/proto"
 	"github.com/teryble09/go_grpc_chat/server"
+	"github.com/teryble09/go_grpc_chat/server/storage"
 	"google.golang.org/grpc"
 )
 
@@ -22,11 +23,20 @@ func main() {
 		os.Exit(1)
 	}
 
+	db, err := storage.NewPostgresDBConnection("5432", "postgres", "postgres", "postgres")
+	if err != nil {
+		log.Error("can't connect to the database")
+		os.Exit(1)
+	}
+
 	var opts []grpc.ServerOption
 
 	grpcServer := grpc.NewServer(opts...)
-	proto.RegisterChatServer(grpcServer, &server.GrpcServer{})
+	proto.RegisterChatServer(grpcServer, &server.GrpcServer{Connections: server.ConnStorage{}, Db: db})
 
 	log.Info("Starting server on port " + strconv.Itoa(port))
-	grpcServer.Serve(lis)
+	err = grpcServer.Serve(lis)
+	if err != nil {
+		log.Error("Failed to start the server" + err.Error())
+	}
 }

@@ -11,8 +11,8 @@ import (
 
 type GrpcServer struct {
 	proto.UnimplementedChatServer
-	connections ConnStorage
-	db          DB
+	Connections ConnStorage
+	Db          DB
 }
 
 func (srv *GrpcServer) Login(ctx context.Context, logReq *proto.LoginRequest) (*proto.LoginResponse, error) {
@@ -21,7 +21,7 @@ func (srv *GrpcServer) Login(ctx context.Context, logReq *proto.LoginRequest) (*
 		return nil, status.Error(codes.Internal, "couldn't encrypt your password")
 	}
 	user := &User{logReq.GetUsername(), password}
-	err = srv.db.RegisterUser(ctx, user)
+	err = srv.Db.RegisterUser(ctx, user)
 	if err != nil {
 		if err == custom_errors.ErrUserAlreadyExist {
 			return nil, status.Error(codes.AlreadyExists, "user with this name already exists")
