@@ -10,12 +10,13 @@ import (
 
 var stmtSaveMessage *sql.Stmt
 
-func (db dbPostgre) SaveMessage(ctx context.Context, message *server.Message) error {
-	_, err := stmtSaveMessage.ExecContext(ctx, message.Username, message.Content)
+func (db dbPostgre) SaveMessage(ctx context.Context, message *server.Message) (uint64, error) {
+	res, err := stmtSaveMessage.ExecContext(ctx, message.Username, message.Content)
 	if err != nil {
-		return custom_errors.ErrMessageFailedSave
+		return 0, custom_errors.ErrMessageFailedSave
 	}
-	return nil
+	id, _ := res.LastInsertId()
+	return uint64(id), nil
 }
 
 var stmtGetMessages *sql.Stmt

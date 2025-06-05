@@ -11,11 +11,11 @@ type ConnStorage struct {
 	sync.Mutex
 }
 
-func (c *ConnStorage) SendMessageToActiveUsers(mes *proto.Message, sender string) {
+func (c *ConnStorage) SendMessageToActiveUsers(mes *proto.Message) {
 	c.Lock()
 	wg := sync.WaitGroup{}
 	for username, cnn := range c.conn {
-		if username == sender {
+		if username == mes.GetUsername() {
 			continue
 		}
 		wg.Add(1)

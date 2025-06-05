@@ -7,7 +7,7 @@ import (
 type DB interface {
 	RegisterUser(ctx context.Context, user *User) error
 	CheckUser(ctx context.Context, user *User) error
-	SaveMessage(ctx context.Context, message *Message) error
+	SaveMessage(ctx context.Context, message *Message) (uint64, error)
 	GetLastMessage(ctx context.Context) (*Message, error)
 	GetMessages(ctx context.Context, start uint64, end uint64) ([]Message, error)
 }

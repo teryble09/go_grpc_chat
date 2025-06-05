@@ -6,6 +6,7 @@ import (
 	"github.com/teryble09/go_grpc_chat/proto"
 	"github.com/teryble09/go_grpc_chat/server/custom_errors"
 	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/status"
 )
 
@@ -33,8 +34,41 @@ func (srv *GrpcServer) Login(ctx context.Context, logReq *proto.LoginRequest) (*
 	return &proto.LoginResponse{}, nil
 }
 
-func (srv *GrpcServer) Stream(proto.Chat_StreamServer) error {
-	return nil
+func (srv *GrpcServer) Stream(cnn proto.Chat_StreamServer) error {
+	ctx := cnn.Context()
+	md, ok := metadata.FromIncomingContext(ctx)
+	if !ok {
+		return status.Error(codes.Unavailable, "can not load metadata")
+	}
+	usernames := md.Get("username")
+	if len(usernames) != 1 {
+		return status.Error(codes.Unauthenticated, "Invalid username in metadata")
+	}
+	username := usernames[0]
+	srv.Connections.RegisterNewUser(username, cnn)
+
+	message, err := srv.Db.GetLastMessage(ctx)
+	if err != nil {
+		return status.Error(codes.Internal, "could not get last message")
+	}
+
+	err = cnn.Send(&proto.Message{MessageId: message.MessageId, Username: message.Username, Content: message.Content})
+	if err != nil {
+		return status.Error(codes.Unavailable, "can not send last message")
+	}
+
+	for {
+		sendReq, err := cnn.Recv()
+		if err != nil {
+			return status.Error(codes.Aborted, "lost connection")
+		}
+		id, err := srv.Db.SaveMessage(ctx, &Message{Username: username, Content: sendReq.GetText()})
+		if err != nil {
+			//log
+			continue
+		}
+		srv.Connections.SendMessageToActiveUsers(&proto.Message{MessageId: id, Username: username, Content: sendReq.GetText()})
+	}
 }
 
 func (srv *GrpcServer) LoadHistory(context.Context, *proto.HistoryRequest) (*proto.HistoryResponse, error) {
