@@ -6,7 +6,7 @@ func InitStatemets(db *sql.DB) error {
 	var err error
 	stmtRegisterUser, err = db.Prepare(`
 		INSERT INTO users (Username, HashPassword)
-		VALUES ($0, $1)
+		VALUES ($1, $2)
 	`)
 
 	if err != nil {
@@ -23,7 +23,7 @@ func InitStatemets(db *sql.DB) error {
 
 	stmtSaveMessage, err = db.Prepare(`
 		INSERT INTO messages (Sender, Content)
-		VALUES ($0, $1)
+		VALUES ($1, $2)
 	`)
 	if err != nil {
 		return err
@@ -31,7 +31,7 @@ func InitStatemets(db *sql.DB) error {
 
 	stmtGetMessages, err = db.Prepare(`
 		SELECT Id, Sender, Content FROM messages
-		WHERE Id >= $0 AND Id < $1
+		WHERE Id >= $1 AND Id < $2
 		ORDER BY Id ASC
 	`)
 	if err != nil {
