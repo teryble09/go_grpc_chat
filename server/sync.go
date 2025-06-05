@@ -11,7 +11,7 @@ type ConnStorage struct {
 	sync.Mutex
 }
 
-func (c *ConnStorage) SendMessageFromUser(mes *proto.Message, sender string) {
+func (c *ConnStorage) SendMessageToActiveUsers(mes *proto.Message, sender string) {
 	c.Lock()
 	wg := sync.WaitGroup{}
 	for username, cnn := range c.conn {
