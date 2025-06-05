@@ -32,7 +32,7 @@ func main() {
 	var opts []grpc.ServerOption
 
 	grpcServer := grpc.NewServer(opts...)
-	proto.RegisterChatServer(grpcServer, &server.GrpcServer{Connections: server.ConnStorage{}, Db: db})
+	proto.RegisterChatServer(grpcServer, &server.GrpcServer{Connections: server.NewConnStorage(), Db: db})
 
 	log.Info("Starting server on port " + strconv.Itoa(port))
 	err = grpcServer.Serve(lis)

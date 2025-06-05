@@ -11,6 +11,10 @@ type ConnStorage struct {
 	sync.Mutex
 }
 
+func NewConnStorage() ConnStorage {
+	return ConnStorage{conn: make(map[string]proto.Chat_StreamServer, 100)}
+}
+
 func (c *ConnStorage) SendMessageToActiveUsers(mes *proto.Message) {
 	c.Lock()
 	wg := sync.WaitGroup{}

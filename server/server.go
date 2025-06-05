@@ -72,7 +72,15 @@ func (srv *GrpcServer) Stream(cnn proto.Chat_StreamServer) error {
 }
 
 func (srv *GrpcServer) LoadHistory(ctx context.Context, hisReq *proto.HistoryRequest) (*proto.HistoryResponse, error) {
-	messages, err := srv.Db.GetMessages(ctx, hisReq.LastMessageId-uint64(hisReq.Amount), hisReq.LastMessageId)
+	start := int64(hisReq.LastMessageId) - int64(hisReq.Amount)
+	if start < 1 {
+		start = 1
+	}
+	if hisReq.LastMessageId < 1 {
+		return nil, status.Error(codes.InvalidArgument, "last_message id should be >= 1")
+	}
+
+	messages, err := srv.Db.GetMessages(ctx, uint64(start), hisReq.LastMessageId)
 	if err != nil {
 		return nil, status.Error(codes.Internal, "could not load history of messages")
 	}
