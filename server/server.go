@@ -71,6 +71,14 @@ func (srv *GrpcServer) Stream(cnn proto.Chat_StreamServer) error {
 	}
 }
 
-func (srv *GrpcServer) LoadHistory(context.Context, *proto.HistoryRequest) (*proto.HistoryResponse, error) {
-	return nil, nil
+func (srv *GrpcServer) LoadHistory(ctx context.Context, hisReq *proto.HistoryRequest) (*proto.HistoryResponse, error) {
+	messages, err := srv.Db.GetMessages(ctx, hisReq.LastMessageId-uint64(hisReq.Amount), hisReq.LastMessageId)
+	if err != nil {
+		return nil, status.Error(codes.Internal, "could not load history of messages")
+	}
+	var protoMessages []*proto.Message
+	for _, v := range messages {
+		protoMessages = append(protoMessages, &proto.Message{MessageId: v.MessageId, Username: v.Username, Content: v.Content})
+	}
+	return &proto.HistoryResponse{Messages: protoMessages}, nil
 }
