@@ -24,7 +24,27 @@ func (db dbPostgre) GetMessages(ctx context.Context, start uint64, end uint64) (
 	if end < 0 {
 		end = 0
 	}
-	rows := stmtGetMessages.QueryRowContext(ctx, start, end)
+	rows, err := stmtGetMessages.QueryContext(ctx, start, end)
+	defer rows.Close()
+	if err != nil {
+		return nil, err
+	}
+
+	for rows.Next() {
+		var (
+			id      uint64
+			sender  string
+			content string
+		)
+		err := rows.Scan(&id, &sender, &content)
+		if err != nil {
+			return nil, err
+		}
+		messages = append(messages, server.Message{MessageId: id, Username: sender, Content: content})
+	}
+	if rows.Err() != nil {
+		return nil, err
+	}
 
 	return messages, nil
 }
@@ -33,7 +53,7 @@ var stmtGetLastMessage *sql.Stmt
 
 func (db dbPostgre) GetLastMessage(ctx context.Context) (*server.Message, error) {
 	var message server.Message
-	rows := stmtGetLastMessage.QueryRowContext(ctx)
-
-	return message, nil
+	row := stmtGetLastMessage.QueryRowContext(ctx)
+	err := row.Scan(&message.MessageId, &message.Username, &message.Content)
+	return &message, err
 }
