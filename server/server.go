@@ -2,6 +2,7 @@ package server
 
 import (
 	"context"
+	"log/slog"
 
 	"github.com/teryble09/go_grpc_chat/proto"
 	"github.com/teryble09/go_grpc_chat/server/custom_errors"
@@ -14,6 +15,7 @@ type GrpcServer struct {
 	proto.UnimplementedChatServer
 	Connections ConnStorage
 	Db          DB
+	Logger      *slog.Logger
 }
 
 func (srv *GrpcServer) Login(ctx context.Context, logReq *proto.LoginRequest) (*proto.LoginResponse, error) {

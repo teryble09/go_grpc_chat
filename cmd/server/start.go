@@ -14,29 +14,29 @@ import (
 )
 
 func main() {
-	log := slog.Default()
+	logger := slog.Default()
 
 	port := 50051
 	lis, err := net.Listen("tcp", fmt.Sprintf("localhost:%d", port))
 	if err != nil {
-		log.Error("Failed to listen: " + err.Error())
+		logger.Error("Failed to listen: " + err.Error())
 		os.Exit(1)
 	}
 
 	db, err := storage.NewPostgresDBConnection("5432", "chat_db", "chat", "chat")
 	if err != nil {
-		log.Error("can't connect to the database" + err.Error())
+		logger.Error("can't connect to the database" + err.Error())
 		os.Exit(1)
 	}
 
 	var opts []grpc.ServerOption
 
 	grpcServer := grpc.NewServer(opts...)
-	proto.RegisterChatServer(grpcServer, &server.GrpcServer{Connections: server.NewConnStorage(), Db: db})
+	proto.RegisterChatServer(grpcServer, &server.GrpcServer{Connections: server.NewConnStorage(), Db: db, Logger: logger})
 
-	log.Info("Starting server on port " + strconv.Itoa(port))
+	logger.Info("Starting server on port " + strconv.Itoa(port))
 	err = grpcServer.Serve(lis)
 	if err != nil {
-		log.Error("Failed to start the server" + err.Error())
+		logger.Error("Failed to start the server" + err.Error())
 	}
 }
