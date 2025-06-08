@@ -21,18 +21,22 @@ type GrpcServer struct {
 func (srv *GrpcServer) Login(ctx context.Context, logReq *proto.LoginRequest) (*proto.LoginResponse, error) {
 	password, err := HashPassword(logReq.GetPassword())
 	if err != nil {
+		srv.Logger.Info("Could not encrypt", "password", password)
 		return nil, status.Error(codes.Internal, "couldn't encrypt your password")
 	}
 	user := &User{logReq.GetUsername(), password}
 	err = srv.Db.RegisterUser(ctx, user)
 	if err != nil {
 		if err == custom_errors.ErrUserAlreadyExist {
+			srv.Logger.Info("Trying to register already existing user", "username", user.Username)
 			return nil, status.Error(codes.AlreadyExists, "user with this name already exists")
 		} else {
+			srv.Logger.Warn("Error in db.RegisterUser", "error", err.Error())
 			return nil, status.Error(codes.Internal, "could't save your account")
 		}
 	}
 
+	srv.Logger.Info("Registered user", "user", user.Username)
 	return &proto.LoginResponse{}, nil
 }
 
