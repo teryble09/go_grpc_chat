@@ -56,7 +56,10 @@ func (srv *GrpcServer) Stream(cnn proto.Chat_StreamServer) error {
 	srv.Connections.RegisterNewUser(username, cnn)
 
 	message, err := srv.Db.GetLastMessage(ctx)
-	if err != nil {
+	if err == custom_errors.ErrNoMessages {
+		srv.Logger.Info("no messages currently, send to username")
+		message = &Message{}
+	} else if err != nil {
 		srv.Logger.Warn("could not get last message", "err", err.Error())
 		return status.Error(codes.Internal, "could not get last message")
 	}

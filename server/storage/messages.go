@@ -62,6 +62,9 @@ func (db dbPostgre) GetLastMessage(ctx context.Context) (*server.Message, error)
 
 	err := row.Scan(&message.MessageId, &message.Username, &message.Content)
 	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, custom_errors.ErrNoMessages
+		}
 		return nil, custom_errors.ErrMessageFailedRetrieve
 	}
 	return &message, nil

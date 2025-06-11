@@ -11,4 +11,5 @@ var (
 
 	ErrMessageFailedSave     = errors.New("can not save message")
 	ErrMessageFailedRetrieve = errors.New("could not retrieve message")
+	ErrNoMessages            = errors.New("no messages")
 )
